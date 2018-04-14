@@ -1,7 +1,6 @@
 package com.alvo.awslambdarunner;
 
-import com.alvo.awslambdarunner.classloading.AwsLambdaClassloader;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.alvo.awslambdarunner.classloading.JarClassloader;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,11 +16,8 @@ public class RequestHandlerInvokeServiceTest {
   public void setUp()
       throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
-    try (AwsLambdaClassloader classloader =
-             new AwsLambdaClassloader(new URL(spec), this.getClass().getClassLoader())) {
-
-      RequestHandler handler = classloader.loadRequestHandlerClass("ApiRequestHandler").newInstance();
-      this.invokeService = new RequestHandlerInvokeService(handler);
+    try (JarClassloader classloader = new JarClassloader(new URL(spec))) {
+//      RequestHandler handler = classloader.loadJarClass("ApiRequestHandler").newInstance();
     }
   }
 

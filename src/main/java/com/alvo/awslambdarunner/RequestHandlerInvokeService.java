@@ -6,16 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RequestHandlerInvokeService<T> {
+public class RequestHandlerInvokeService {
 
-  private final RequestHandler lambdaRequestHandler;
+  private final RequestHandler<Object, Object> lambdaRequestHandler;
 
   @Autowired
-  public RequestHandlerInvokeService(RequestHandler lambdaRequestHandler) {
+  public RequestHandlerInvokeService(RequestHandler<Object, Object> lambdaRequestHandler) {
     this.lambdaRequestHandler = lambdaRequestHandler;
   }
 
-  public T invoke(Object requestPayload, Context context) {
-    return (T) lambdaRequestHandler.handleRequest(requestPayload, context);
+  public Object invoke(Object requestPayload, Context context) {
+    return lambdaRequestHandler.handleRequest(requestPayload, context);
   }
 }

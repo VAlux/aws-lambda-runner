@@ -1,6 +1,6 @@
 package com.alvo.awslambdarunner;
 
-import com.alvo.awslambdarunner.classloading.AwsLambdaClassloader;
+import com.alvo.awslambdarunner.classloading.JarClassloader;
 import com.alvo.awslambdarunner.classloading.LocalJarLocatorService;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,16 +21,16 @@ public class LambdaRunnerConfig {
   private String requestHandlerClassname;
 
   @Bean
-  public AwsLambdaClassloader awsLambdaClassloader(LocalJarLocatorService locator)
+  public JarClassloader awsLambdaClassloader(LocalJarLocatorService locator)
       throws IOException, URISyntaxException {
 
     final URL lambdaJarUrl = locator.locateJar(awsLambdaServiceName).toURL();
-    return new AwsLambdaClassloader(lambdaJarUrl, this.getClass().getClassLoader());
+    return new JarClassloader(lambdaJarUrl);
   }
 
   @Bean
-  public RequestHandler loadRequestHandler(AwsLambdaClassloader lambdaClassloader)
-      throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-    return lambdaClassloader.loadRequestHandlerClass(requestHandlerClassname).newInstance();
+  public RequestHandler loadRequestHandler(JarClassloader lambdaClassloader)
+      throws ClassNotFoundException, IllegalAccessException, InstantiationException, IOException {
+    return (RequestHandler) lambdaClassloader.loadJarClass(requestHandlerClassname).newInstance();
   }
 }

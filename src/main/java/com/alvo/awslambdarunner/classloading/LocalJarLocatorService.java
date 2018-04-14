@@ -29,7 +29,7 @@ public class LocalJarLocatorService implements JarLocatorService {
     final URI uri = new URI(normalizeLookupPath(lookupBasePath));
     try (Stream<Path> walk = Files.walk(FileUtils.getFile(uri.getPath()).toPath())) {
       return walk
-          .filter(path -> validateFile(path, jarName))
+          .filter(path -> isValidJarFile(path, jarName))
           .findAny()
           .map(Path::toUri)
           .orElseThrow(() ->
@@ -37,7 +37,7 @@ public class LocalJarLocatorService implements JarLocatorService {
     }
   }
 
-  private boolean validateFile(Path path, String jarName) {
+  private boolean isValidJarFile(Path path, String jarName) {
     final String filename = path.getFileName().toString();
     return filename.contains(jarName) && filename.contains(JAR_EXTENSION);
   }
