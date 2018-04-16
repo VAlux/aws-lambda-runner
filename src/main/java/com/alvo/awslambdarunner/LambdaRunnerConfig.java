@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 @Configuration
 public class LambdaRunnerConfig {
@@ -21,7 +22,7 @@ public class LambdaRunnerConfig {
   private String requestHandlerClassname;
 
   @Bean
-  public JarClassloader awsLambdaClassloader(LocalJarLocatorService locator)
+  public JarClassloader jarClassloader(LocalJarLocatorService locator)
       throws IOException, URISyntaxException {
 
     final URL lambdaJarUrl = locator.locateJar(awsLambdaServiceName).toURL();
@@ -29,8 +30,13 @@ public class LambdaRunnerConfig {
   }
 
   @Bean
-  public RequestHandler loadRequestHandler(JarClassloader lambdaClassloader)
+  public GenericAwsLambdaRequestHandler loadRequestHandler(JarClassloader lambdaClassloader)
       throws ClassNotFoundException, IllegalAccessException, InstantiationException, IOException {
-    return (RequestHandler) lambdaClassloader.loadJarClass(requestHandlerClassname).newInstance();
+
+    final Class<?> requestHandlerClass = lambdaClassloader.loadJarClass(requestHandlerClassname);
+    final List<Class<?>> typeParameters = lambdaClassloader.getGenericTypeArgumentClasses(requestHandlerClass);
+    final RequestHandler requestHandler = (RequestHandler) requestHandlerClass.newInstance();
+
+    return new GenericAwsLambdaRequestHandler(requestHandler, typeParameters);
   }
 }
