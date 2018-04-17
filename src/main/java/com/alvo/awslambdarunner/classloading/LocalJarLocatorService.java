@@ -20,7 +20,7 @@ public class LocalJarLocatorService implements JarLocatorService {
 
   private final String lookupBasePath;
 
-  public LocalJarLocatorService(@Value("${local.jar.lookup.directory}") String lookupBasePath) {
+  public LocalJarLocatorService(@Value("${local.jar.lookup.directory:/}") String lookupBasePath) {
     this.lookupBasePath = lookupBasePath;
   }
 

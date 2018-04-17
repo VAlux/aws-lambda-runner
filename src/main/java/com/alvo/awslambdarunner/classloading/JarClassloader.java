@@ -33,11 +33,25 @@ public class JarClassloader extends URLClassLoader {
     URL url = new URL("jar", "", jarUrl + "!/");
     JarURLConnection connection = (JarURLConnection) url.openConnection();
     return connection.getJarFile().stream()
-        .filter(jarEntry -> !jarEntry.isDirectory() && jarEntry.getName().contains(className))
+        .filter(jarEntry -> isJarEntryValid(className, jarEntry))
         .findAny()
         .flatMap(this::loadClassForJarEntry)
         .orElseThrow(() ->
             new ClassNotFoundException("Desired class is not found or can't be loaded"));
+  }
+
+  private boolean isJarEntryValid(String className, JarEntry jarEntry) {
+    return !jarEntry.isDirectory()
+        && jarEntry.getName().contains(className)
+        && !jarEntry.getName().contains("$");
+  }
+
+  public List<Class<?>> getGenericTypeArgumentClasses(Class<?> targetClass) {
+    return Arrays.stream(targetClass.getGenericInterfaces())
+        .flatMap(type -> Arrays.stream(((ParameterizedType) type).getActualTypeArguments()))
+        .map(this::getClassForType)
+        .flatMap(opt -> opt.map(Stream::of).orElse(Stream.empty())) // unwrap
+        .collect(Collectors.toList());
   }
 
   private Optional<Class<?>> loadClassForJarEntry(JarEntry jarEntry) {
@@ -53,14 +67,6 @@ public class JarClassloader extends URLClassLoader {
       LOGGER.error("Can't load class for jar entry: {}", jarEntry);
       return Optional.empty();
     }
-  }
-
-  public List<Class<?>> getGenericTypeArgumentClasses(Class<?> targetClass) {
-    return Arrays.stream(targetClass.getGenericInterfaces())
-        .flatMap(type -> Arrays.stream(((ParameterizedType) type).getActualTypeArguments()))
-        .map(this::getClassForType)
-        .flatMap(opt -> opt.map(Stream::of).orElse(Stream.empty())) // unwrap
-        .collect(Collectors.toList());
   }
 
   private Optional<Class<?>> getClassForType(Type type) {
