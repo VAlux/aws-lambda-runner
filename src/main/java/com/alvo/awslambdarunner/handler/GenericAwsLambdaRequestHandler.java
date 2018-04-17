@@ -1,25 +1,22 @@
-package com.alvo.awslambdarunner;
+package com.alvo.awslambdarunner.handler;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 import java.util.List;
 
-public class GenericAwsLambdaRequestHandler {
+public class GenericAwsLambdaRequestHandler implements AwsLambdaRequestHandler<Object, Object> {
 
   private static final int INPUT_TYPE_INDEX = 0;
   private static final int OUTPUT_TYPE_INDEX = 1;
 
-  private final RequestHandler<Object, Object> awsLambdaRequestHandler;
+  private final RequestHandler awsLambdaRequestHandler;
   private final List<Class<?>> typeParameters;
 
-  public GenericAwsLambdaRequestHandler(RequestHandler<Object, Object> awsLambdaRequestHandler,
+  public GenericAwsLambdaRequestHandler(RequestHandler awsLambdaRequestHandler,
                                         List<Class<?>> typeParameters) {
     this.awsLambdaRequestHandler = awsLambdaRequestHandler;
     this.typeParameters = typeParameters;
-  }
-
-  public RequestHandler<Object, Object> getAwsLambdaRequestHandler() {
-    return awsLambdaRequestHandler;
   }
 
   public List<Class<?>> getTypeParameters() {
@@ -32,5 +29,10 @@ public class GenericAwsLambdaRequestHandler {
 
   public Class<?> getOutputType() {
     return typeParameters.get(OUTPUT_TYPE_INDEX);
+  }
+
+  @Override
+  public Object handleRequest(Object input, Context context) {
+    return awsLambdaRequestHandler.<Object, Object>handleRequest(input, context);
   }
 }

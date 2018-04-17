@@ -1,9 +1,10 @@
 package com.alvo.awslambdarunner.controller;
 
 import com.alvo.awslambdarunner.ApiGatewayRequest;
-import com.alvo.awslambdarunner.translator.ApiGatewayTranslator;
-import com.alvo.awslambdarunner.GenericAwsLambdaRequestHandler;
+import com.alvo.awslambdarunner.handler.AwsLambdaRequestHandler;
+import com.alvo.awslambdarunner.handler.GenericAwsLambdaRequestHandler;
 import com.alvo.awslambdarunner.LambdaRuntimeContext;
+import com.alvo.awslambdarunner.translator.Translator;
 import com.amazonaws.util.json.Jackson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,12 +21,12 @@ public class ApiRequestHandlerDelegatingController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ApiRequestHandlerDelegatingController.class);
 
-  private final GenericAwsLambdaRequestHandler requestHandler;
-  private final ApiGatewayTranslator translator;
+  private final AwsLambdaRequestHandler<Object, Object> requestHandler;
+  private final Translator<HttpServletRequest, ApiGatewayRequest> translator;
 
   @Autowired
-  public ApiRequestHandlerDelegatingController(GenericAwsLambdaRequestHandler requestHandler,
-                                               ApiGatewayTranslator translator) {
+  public ApiRequestHandlerDelegatingController(AwsLambdaRequestHandler<Object, Object> requestHandler,
+                                               Translator<HttpServletRequest, ApiGatewayRequest> translator) {
     this.requestHandler = requestHandler;
     this.translator = translator;
   }
@@ -43,7 +44,7 @@ public class ApiRequestHandlerDelegatingController {
 
     final Object output = translator.from(request)
         .map(this::marshalToInputType)
-        .map(input -> requestHandler.getAwsLambdaRequestHandler().handleRequest(input, ctx))
+        .map(input -> requestHandler.handleRequest(input, ctx))
         .orElseThrow(() -> new IllegalStateException("Lambda request handler returned empty or error response"));
 
     return ResponseEntity.ok(output);
