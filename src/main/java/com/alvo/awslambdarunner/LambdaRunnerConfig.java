@@ -2,6 +2,8 @@ package com.alvo.awslambdarunner;
 
 import com.alvo.awslambdarunner.classloading.JarClassloader;
 import com.alvo.awslambdarunner.classloading.LocalJarLocatorService;
+import com.alvo.awslambdarunner.handler.AwsLambdaRequestHandler;
+import com.alvo.awslambdarunner.handler.GenericAwsLambdaRequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -32,7 +34,7 @@ public class LambdaRunnerConfig {
   }
 
   @Bean
-  public GenericAwsLambdaRequestHandler loadRequestHandler(JarClassloader lambdaClassloader)
+  public AwsLambdaRequestHandler<Object, Object> loadRequestHandler(JarClassloader lambdaClassloader)
       throws ClassNotFoundException, IllegalAccessException, InstantiationException, IOException {
 
     final Class<?> requestHandlerClass = lambdaClassloader.loadJarClass(requestHandlerClassname);

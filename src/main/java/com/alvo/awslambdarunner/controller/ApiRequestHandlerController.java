@@ -1,9 +1,11 @@
 package com.alvo.awslambdarunner.controller;
 
 import com.alvo.awslambdarunner.ApiGatewayRequest;
-import com.alvo.awslambdarunner.GenericAwsLambdaRequestHandler;
 import com.alvo.awslambdarunner.LambdaRuntimeContext;
+import com.alvo.awslambdarunner.handler.AwsLambdaRequestHandler;
+import com.alvo.awslambdarunner.handler.GenericAwsLambdaRequestHandler;
 import com.alvo.awslambdarunner.translator.ApiGatewayTranslator;
+import com.alvo.awslambdarunner.translator.Translator;
 import com.amazonaws.util.json.Jackson;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
@@ -25,8 +27,8 @@ public class ApiRequestHandlerController {
   private static final Logger LOGGER = LoggerFactory.getLogger(ApiRequestHandlerController.class);
   private static final String AWS_REQUEST_ID = "lambda-runner-request-id";
 
-  private final GenericAwsLambdaRequestHandler requestHandler;
-  private final ApiGatewayTranslator translator;
+  private final AwsLambdaRequestHandler<Object, Object> requestHandler;
+  private final Translator<HttpServletRequest, ApiGatewayRequest> translator;
 
   @Value("${aws.lambda.function.name}")
   private String functionName;
@@ -50,7 +52,7 @@ public class ApiRequestHandlerController {
 
     final Object output = translator.from(request)
         .map(this::marshalToInputType)
-        .map(input -> requestHandler.getAwsLambdaRequestHandler().handleRequest(input, ctx))
+        .map(input -> requestHandler.handleRequest(input, ctx))
         .orElseThrow(() -> new IllegalStateException("Lambda request handler returned empty or error response"));
 
     try {
