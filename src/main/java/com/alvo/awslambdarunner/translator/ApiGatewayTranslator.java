@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,9 +40,14 @@ public class ApiGatewayTranslator implements Translator<HttpServletRequest, ApiG
   }
 
   private Map<String, String> extractQueryStringParameters(final HttpServletRequest request) {
-    return Arrays.stream(request.getQueryString().split("&"))
-        .map(parameter -> parameter.split("=", 2))
-        .collect(Collectors.toMap(splitted -> splitted[0], splitted -> splitted[1]));
+    final String queryString = request.getQueryString();
+    if (queryString != null) {
+      return Arrays.stream(queryString.split("&"))
+          .map(parameter -> parameter.split("=", 2))
+          .collect(Collectors.toMap(splitted -> splitted[0], splitted -> splitted[1]));
+    } else {
+      return Collections.emptyMap();
+    }
   }
 
   private Map<String, String> extractPathParameters(final HttpServletRequest request) {

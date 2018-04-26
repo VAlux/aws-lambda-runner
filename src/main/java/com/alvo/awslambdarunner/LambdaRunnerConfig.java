@@ -3,6 +3,8 @@ package com.alvo.awslambdarunner;
 import com.alvo.awslambdarunner.classloading.JarClassloader;
 import com.alvo.awslambdarunner.classloading.LocalJarLocatorService;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,5 +40,12 @@ public class LambdaRunnerConfig {
     final RequestHandler requestHandler = (RequestHandler) requestHandlerClass.newInstance();
 
     return new GenericAwsLambdaRequestHandler(requestHandler, typeParameters);
+  }
+
+  @Bean
+  public ObjectMapper objectMapper() {
+    final ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+    return objectMapper;
   }
 }
